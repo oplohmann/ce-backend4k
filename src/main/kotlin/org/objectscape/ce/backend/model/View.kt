@@ -5,6 +5,8 @@ import java.util.*
 class View : Model {
 
     companion object {
+        val RootParentId = 0L
+        val RootDefaultName = "Views"
         val TableName = "views"
     }
 

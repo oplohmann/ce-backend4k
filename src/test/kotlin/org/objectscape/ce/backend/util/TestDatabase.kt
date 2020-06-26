@@ -1,10 +1,7 @@
 package org.objectscape.ce.backend.util
 
 import org.objectscape.ce.backend.Database
-import org.objectscape.ce.backend.model.Category
-import org.objectscape.ce.backend.model.CategoryItem
-import org.objectscape.ce.backend.model.CategoryParent
-import org.objectscape.ce.backend.model.Item
+import org.objectscape.ce.backend.model.*
 
 class TestDatabase(dbFilePath: String) : Database(dbFilePath) {
 
@@ -29,6 +26,13 @@ class TestDatabase(dbFilePath: String) : Database(dbFilePath) {
     fun deleteViewRelatedData() {
         deleteAllItems()
         deleteAllCategoriesExceptRootCategory()
+        deleteAllViewsExceptRootView()
+    }
+
+    private fun deleteAllViewsExceptRootView() {
+        val stmt = connection.createStatement()
+        stmt.closeOnCompletion()
+        stmt.execute("delete from ${View.TableName} where parent_id != ${View.RootParentId}")
     }
 
 }
