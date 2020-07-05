@@ -21,41 +21,37 @@ abstract class AbstractTest {
 
         var name = "Category1_1"
         var category1_1 = Category(-1, rootCategory.id, name)
-        var error = categoriesStore.addCategory(listOf(rootCategory.id), category1_1)
+        category1_1 = categoriesStore.addCategory(listOf(rootCategory.id), category1_1)
         Assert.assertNotNull(category1_1.id)
         Assert.assertTrue(category1_1.id > 1)
         Assert.assertFalse(category1_1.isRoot())
-        Assert.assertNull(error)
 
         categories.put(name, category1_1)
 
         name = "Category2_1"
         var category2_1 = Category(-1, category1_1.id, name)
-        error = categoriesStore.addCategory(listOf(rootCategory.id, category1_1.id), category2_1)
+        category2_1 = categoriesStore.addCategory(listOf(rootCategory.id, category1_1.id), category2_1)
         Assert.assertNotNull(category2_1.id)
         Assert.assertTrue(category2_1.id > 1)
         Assert.assertFalse(category2_1.isRoot())
-        Assert.assertNull(error)
 
         categories.put(name, category2_1)
 
         name = "Category3_1"
         var category3_1 = Category(-1, category2_1.id, name)
-        error = categoriesStore.addCategory(listOf(rootCategory.id, category1_1.id, category2_1.id), category3_1)
+        category3_1 = categoriesStore.addCategory(listOf(rootCategory.id, category1_1.id, category2_1.id), category3_1)
         Assert.assertNotNull(category3_1.id)
         Assert.assertTrue(category3_1.id > 1)
         Assert.assertFalse(category3_1.isRoot())
-        Assert.assertNull(error)
 
         categories.put(name, category3_1)
 
         name = "Category3_2"
         var category3_2 = Category(-1, category2_1.id, name)
-        error = categoriesStore.addCategory(listOf(rootCategory.id, category1_1.id, category2_1.id), category3_2)
+        category3_2 = categoriesStore.addCategory(listOf(rootCategory.id, category1_1.id, category2_1.id), category3_2)
         Assert.assertNotNull(category3_2.id)
         Assert.assertTrue(category3_2.id > 1)
         Assert.assertFalse(category3_2.isRoot())
-        Assert.assertNull(error)
 
         categories.put(name, category3_2)
 

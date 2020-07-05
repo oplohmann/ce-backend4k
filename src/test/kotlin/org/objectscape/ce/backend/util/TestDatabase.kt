@@ -15,6 +15,9 @@ class TestDatabase(dbFilePath: String) : Database(dbFilePath) {
     }
 
     fun deleteAllCategoriesExceptRootCategory() {
+        deleteAllCategoryViews()
+        deleteAllCategoryItems()
+        deleteAllCategoryParents()
         val stmt = connection.createStatement()
         stmt.closeOnCompletion()
         stmt.execute("delete from ${Category.TableName} where first_parent_id != ${Category.RootParentId}")
@@ -30,9 +33,6 @@ class TestDatabase(dbFilePath: String) : Database(dbFilePath) {
 
     fun deleteViewRelatedData() {
         deleteAllItems()
-        deleteAllCategoryViews()
-        deleteAllCategoryItems()
-        deleteAllCategoryParents();
         deleteAllCategoriesExceptRootCategory()
         deleteAllViewsExceptRootView()
     }

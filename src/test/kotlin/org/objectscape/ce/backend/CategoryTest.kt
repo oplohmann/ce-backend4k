@@ -39,12 +39,11 @@ class CategoryTest : AbstractTest() {
         val rootCategory = categoriesStore.getRootCategory()
         testDatabase.deleteAllCategoriesExceptRootCategory();
 
-        val newCategory = Category(-1, rootCategory.id, "SubCategory")
-        var error = categoriesStore.addCategory(listOf(rootCategory.id), newCategory)
+        var newCategory = Category(-1, rootCategory.id, "SubCategory")
+        newCategory = categoriesStore.addCategory(listOf(rootCategory.id), newCategory)
         assertNotNull(newCategory.id)
         assertTrue(newCategory.id > 1)
         assertFalse(newCategory.isRoot())
-        assertNull(error)
 
         var exceptionOccurred = false
 
@@ -55,7 +54,6 @@ class CategoryTest : AbstractTest() {
             assertTrue(e is CategoryAlreadyExists)
         }
 
-        assertNotNull(error)
         assertTrue(exceptionOccurred)
     }
 
@@ -66,27 +64,24 @@ class CategoryTest : AbstractTest() {
         testDatabase.deleteAllCategoriesExceptRootCategory()
 
         var newCategory = Category(-1, rootCategory.id, "SubCategory1Level1")
-        var error = categoriesStore.addCategory(listOf(rootCategory.id), newCategory)
+        newCategory = categoriesStore.addCategory(listOf(rootCategory.id), newCategory)
         assertNotNull(newCategory.id)
         assertTrue(newCategory.id > 1)
         assertFalse(newCategory.isRoot())
-        assertNull(error)
 
         newCategory = Category(-1, rootCategory.id, "SubCategory2Level1")
-        error = categoriesStore.addCategory(listOf(rootCategory.id), newCategory)
+        newCategory = categoriesStore.addCategory(listOf(rootCategory.id), newCategory)
         assertNotNull(newCategory)
         assertNotNull(newCategory.id)
         assertTrue(newCategory.id > 1)
         assertFalse(newCategory.isRoot())
-        assertNull(error)
 
         newCategory = Category(-1, rootCategory.id, "SubCategory3Level1")
-        error = categoriesStore.addCategory(listOf(rootCategory.id), newCategory)
+        newCategory = categoriesStore.addCategory(listOf(rootCategory.id), newCategory)
         assertNotNull(newCategory)
         assertNotNull(newCategory.id)
         assertTrue(newCategory.id > 1)
         assertFalse(newCategory.isRoot())
-        assertNull(error)
 
         val childrenCount = categoriesStore.getChildrenCountFirstLevel(rootCategory.id)
         assertTrue(childrenCount == 3)

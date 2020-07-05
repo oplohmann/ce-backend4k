@@ -94,12 +94,11 @@ class ViewsTest  : AbstractTest() {
         val rootCategory = categoriesStore.getRootCategory()
         testDatabase.deleteAllCategoriesExceptRootCategory();
 
-        val category = Category(-1, rootCategory.id, "SubCategory")
-        var errorAddCategory = categoriesStore.addCategory(listOf(rootCategory.id), category)
+        var category = Category(-1, rootCategory.id, "SubCategory")
+        category = categoriesStore.addCategory(listOf(rootCategory.id), category)
         assertNotNull(category.id)
         assertTrue(category.id > 1)
         assertFalse(category.isRoot())
-        assertNull(errorAddCategory)
 
         // viewsStore.addCategoryToView(view, category, 0)
     }
