@@ -46,11 +46,17 @@ class CategoryTest : AbstractTest() {
         assertFalse(newCategory.isRoot())
         assertNull(error)
 
-        error = categoriesStore.addCategory(listOf(rootCategory.id), newCategory)
-        assertNotNull(error)
-        assertTrue(error is CategoryAlreadyExists)
+        var exceptionOccurred = false
 
-        // testDatabase.deleteAllCategoriesExceptRootCategory();
+        try {
+            categoriesStore.addCategory(listOf(rootCategory.id), newCategory)
+        } catch (e: Exception) {
+            exceptionOccurred = true
+            assertTrue(e is CategoryAlreadyExists)
+        }
+
+        assertNotNull(error)
+        assertTrue(exceptionOccurred)
     }
 
     @Test
@@ -99,12 +105,6 @@ class CategoryTest : AbstractTest() {
         val rootCategory = categoriesStore.getRootCategory()
         val newCategory = Category(-1, rootCategory.id + 1, "Subcategory")
         categoriesStore.addCategory(listOf(rootCategory.id), newCategory)
-    }
-
-    private fun getCategoriesStore() : CategoryStore {
-        val categoriesStore = testDatabase.categoryStore
-        assertNotNull(categoriesStore)
-        return categoriesStore
     }
 
 }

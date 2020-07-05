@@ -1,14 +1,22 @@
 package org.objectscape.ce.backend.storage
 
-import org.objectscape.ce.backend.CategoryAlreadyExists
 import org.objectscape.ce.backend.DatabaseException
+import org.objectscape.ce.backend.NotPersistentException
 import org.objectscape.ce.backend.ViewAlreadyExists
 import org.objectscape.ce.backend.model.Category
+import org.objectscape.ce.backend.model.CategoryView
 import org.objectscape.ce.backend.model.View
+import org.objectscape.ce.backend.storage.exceptions.CategorySortException
 import java.sql.Connection
 import java.sql.ResultSet
 
-class ViewsStore(connection: Connection) : AbstractStore(connection) {
+open class ViewsStore : AbstractStore {
+
+    private val categoryViewsStore : CategoryViewsStore
+
+    constructor(connection: Connection, categoryViewsStore : CategoryViewsStore) : super(connection) {
+        this.categoryViewsStore = categoryViewsStore
+    }
 
     init {
         ensureRootViewExists()
@@ -39,7 +47,7 @@ class ViewsStore(connection: Connection) : AbstractStore(connection) {
         throw DatabaseException("root view not found!")
     }
 
-    private fun fromResultSet(resultSet : ResultSet) : View {
+    protected fun fromResultSet(resultSet : ResultSet) : View {
         return View(
             resultSet.getLong(1),
             resultSet.getLong(2),
@@ -62,6 +70,96 @@ class ViewsStore(connection: Connection) : AbstractStore(connection) {
         }
 
         throw DatabaseException("Error inserting $view !")
+    }
+
+    fun addCategoryToView(view: View, category: Category, position: Int, categoriesOfSameView: List<CategoryView>) {
+        if(!category.isPersistent()) {
+            throw NotPersistentException("Category $category not persistent!")
+        }
+        if(!view.isPersistent()) {
+            throw NotPersistentException("View $view not persistent!")
+        }
+        assertPersistent(categoriesOfSameView)
+        assertPositionInRange(position, categoriesOfSameView)
+
+        val newCategoryView = CategoryView(-1, view.id, category.id, position)
+        val changedCategoryViews = insertInOrder(newCategoryView, categoriesOfSameView)
+        categoryViewsStore.updatePositions(changedCategoryViews)
+
+    }
+
+    private fun assertPositionInRange(position: Int, categoriesOfSameView: List<CategoryView>) {
+        if(position < 0) {
+            throw CategorySortException("Position $position out of range!")
+        }
+
+        if(categoriesOfSameView.isEmpty()) {
+            if(position != 0) {
+                throw CategorySortException("Position $position out of range!")
+            }
+            return
+        }
+
+        val positions = categoriesOfSameView.map { it.position }.toSortedSet()
+        if(!positions.contains(position) && positions.last() + 1 != position) {
+            throw CategorySortException("Position $position out of range!")
+        }
+    }
+
+    fun loadViewNamed(name: String) : View? {
+        val views = ArrayList<View>()
+        val resultSet = executeQuery("select * from ${tableName()} where name = '$name'")
+        resultSet.use {
+            while(resultSet.next()) {
+                views.add(fromResultSet(resultSet))
+            }
+        }
+        if(views.isEmpty()) {
+            return null
+        }
+        return views.get(0)
+    }
+
+    /**
+     * Returns changed CategoryViews only
+     */
+    protected fun insertInOrder(cvNew: CategoryView, cvs: List<CategoryView>) : List<CategoryView> {
+        val newCvs = ArrayList<CategoryView>()
+        val updatedCvs = ArrayList<CategoryView>()
+        if(cvs.isEmpty()) {
+            cvNew.position = 0
+            newCvs.add(cvNew)
+            return newCvs
+        }
+        val cvsSorted = cvs.toSortedSet(compareBy { it.position })
+        var added = false
+        cvsSorted.forEach {
+            if(it.position < cvNew.position) {
+                newCvs.add(it)
+                return@forEach
+            }
+            if(it.position == cvNew.position){
+                newCvs.add(cvNew)
+                added = true
+                it.position++
+                newCvs.add(it)
+                updatedCvs.add(it)
+                return@forEach
+            }
+            it.position++
+            newCvs.add(it)
+            updatedCvs.add(it)
+        }
+
+        if(!added) {
+            if(cvNew.position == newCvs.last().position + 1) {
+                newCvs.add(cvNew)
+            } else {
+                throw CategorySortException("Cannot insert categoryView $newCvs in correct order")
+            }
+        }
+
+        return updatedCvs
     }
 
     override fun tableName(): String = View.TableName

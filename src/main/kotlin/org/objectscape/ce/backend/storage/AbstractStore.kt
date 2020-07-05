@@ -1,7 +1,9 @@
 package org.objectscape.ce.backend.storage
 
 import org.objectscape.ce.backend.DatabaseException
+import org.objectscape.ce.backend.NotPersistentException
 import org.objectscape.ce.backend.model.Category
+import org.objectscape.ce.backend.model.Model
 import org.objectscape.ce.backend.util.forEachIsLast
 import java.lang.StringBuilder
 import java.sql.Connection
@@ -20,10 +22,10 @@ abstract class AbstractStore {
 
     protected abstract fun tableName(): String
 
-    protected fun execute(sql : String) {
+    protected fun execute(sql : String): Boolean {
         val stmt = connection.createStatement()
         stmt.closeOnCompletion()
-        stmt.execute(sql)
+        return stmt.execute(sql)
     }
 
     protected fun executeQuery(sql : String) : ResultSet {
@@ -54,6 +56,14 @@ abstract class AbstractStore {
         }
         inClause.append(")")
         return inClause.toString()
+    }
+
+    protected fun assertPersistent(models: List<Model>) {
+        models.forEach {
+            if(!it.isPersistent()) {
+                throw NotPersistentException("$it not persistent!")
+            }
+        }
     }
 
 }

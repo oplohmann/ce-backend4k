@@ -24,6 +24,10 @@ class Category : Model {
         return firstParentId == RootParentId
     }
 
+    override fun isPersistent(): Boolean {
+        return super.isPersistent() && firstParentId >= 0
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

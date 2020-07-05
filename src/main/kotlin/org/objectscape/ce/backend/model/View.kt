@@ -18,6 +18,10 @@ class View : Model {
         this.name = name
     }
 
+    override fun isPersistent(): Boolean {
+        return super.isPersistent() && parentId >= 0
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

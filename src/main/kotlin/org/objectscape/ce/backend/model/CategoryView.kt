@@ -8,10 +8,12 @@ class CategoryView  : Model {
 
     val viewId: Long
     val categoryId: Long
+    var position: Int
 
-    constructor(id: Long, viewId: Long, categoryId: Long) : super(id) {
+    constructor(id: Long, viewId: Long, categoryId: Long, position: Int) : super(id) {
         this.viewId = viewId
         this.categoryId = categoryId
+        this.position = position;
     }
 
     override fun equals(other: Any?): Boolean {
@@ -33,5 +35,10 @@ class CategoryView  : Model {
         result = 31 * result + categoryId.hashCode()
         return result
     }
+
+    override fun toString(): String {
+        return "CategoryView(id=$id, viewId=$viewId, categoryId=$categoryId, position=$position)"
+    }
+
 
 }

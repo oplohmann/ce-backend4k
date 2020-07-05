@@ -16,6 +16,7 @@ open class Database {
     val categoryStore: CategoryStore
     val categoryHierarchyStore: CategoryHierarchyStore
     val categoryItemsStore : CategoryItemsStore
+    val categoryViewsStore : CategoryViewsStore
     val itemsStore: ItemsStore
     val viewsStore: ViewsStore
 
@@ -27,7 +28,8 @@ open class Database {
             this.categoryStore = CategoryStore(connection, categoryHierarchyStore)
             this.categoryItemsStore = CategoryItemsStore(connection)
             this.itemsStore = ItemsStore(connection, categoryItemsStore)
-            this.viewsStore = ViewsStore(connection)
+            this.categoryViewsStore = CategoryViewsStore(connection)
+            this.viewsStore = ViewsStore(connection, categoryViewsStore)
         }
     }
 
@@ -38,8 +40,15 @@ open class Database {
             throw DatabaseException("Database connection for $dbFilePath already created!")
         }
         val singleConnection = DriverManager.getConnection("jdbc:sqlite:" + dbFilePath)
+        enableForeignKeyConstraints(singleConnection)
         Connections.put(dbFilePath, singleConnection)
         return singleConnection
+    }
+
+    private fun enableForeignKeyConstraints(singleConnection: Connection) {
+        val stmt = singleConnection.createStatement()
+        stmt.closeOnCompletion()
+        stmt.execute("PRAGMA foreign_keys = ON;")
     }
 
     fun close() {

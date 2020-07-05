@@ -43,7 +43,8 @@ class CategoryStore : AbstractStore {
         throw DatabaseException("root category not found!")
     }
 
-    fun addCategory(parentIdsInOrder : List<Long>, category: Category) : CategoryAlreadyExists? {
+    @Throws(CategoryAlreadyExists::class, DatabaseException::class)
+    fun addCategory(parentIdsInOrder : List<Long>, category: Category) : Category {
         if(parentIdsInOrder.isEmpty()) {
             throw DatabaseException("no parent ids provided")
         }
@@ -53,7 +54,7 @@ class CategoryStore : AbstractStore {
         }
         val alreadyExists = getCount("where first_parent_id = $parentId and name = '${category.name}'") == 1
         if(alreadyExists) {
-            return CategoryAlreadyExists("Category ${category} already exists at that level!")
+            throw CategoryAlreadyExists("Category ${category} already exists at that level!")
         }
         execute("insert into ${tableName()}(first_parent_id, name) values(${category.firstParentId}, '${category.name}')")
         val resultSet = executeQuery("select id from ${tableName()} where first_parent_id = $parentId and name = '${category.name}'")
@@ -61,7 +62,7 @@ class CategoryStore : AbstractStore {
             if(it.next()) {
                 category.id = it.getLong(1)
                 categoryHierarchyStore.addParents(parentIdsInOrder, category)
-                return null
+                return category
             }
         }
 
@@ -87,6 +88,16 @@ class CategoryStore : AbstractStore {
 
     fun getChildrenIds(id: Long) : List<Long>  {
         return categoryHierarchyStore.getChildrenIds(id)
+    }
+
+    fun loadCategory(name: String, parentId: Long): Category? {
+        val resultSet = executeQuery("select * from ${tableName()} where name = '$name' and first_parent_id = $parentId")
+        resultSet.use {
+            if(it.next()) {
+                return fromResultSet(it)
+            }
+        }
+        return null
     }
 
 

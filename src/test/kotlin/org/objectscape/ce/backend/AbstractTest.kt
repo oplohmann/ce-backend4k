@@ -3,7 +3,10 @@ package org.objectscape.ce.backend
 import org.junit.Assert
 import org.junit.Test
 import org.objectscape.ce.backend.model.Category
+import org.objectscape.ce.backend.storage.CategoryStore
+import org.objectscape.ce.backend.storage.CategoryViewsStore
 import org.objectscape.ce.backend.util.TestDatabase
+import org.objectscape.ce.backend.util.TestViewsStore
 
 abstract class AbstractTest {
 
@@ -90,6 +93,29 @@ abstract class AbstractTest {
         }
 
         return categories
+    }
+
+    protected fun getTestViewsStore() : TestViewsStore {
+        return testDatabase.testViewsStore
+    }
+
+    protected fun getCategoryViewsStore(): CategoryViewsStore {
+        return testDatabase.categoryViewsStore
+    }
+
+    protected fun getCategoriesStore() : CategoryStore {
+        val categoriesStore = testDatabase.categoryStore
+        Assert.assertNotNull(categoriesStore)
+        return categoriesStore
+    }
+
+    fun ensureRootChildCategoryExists(name: String): Category {
+        val rootCategoryId = getCategoriesStore().getRootCategory().id
+        var category = getCategoriesStore().loadCategory(name, rootCategoryId)
+        if(category != null) {
+            return category
+        }
+        return getCategoriesStore().addCategory(listOf(rootCategoryId), Category(-1, rootCategoryId, name))
     }
 
 }
