@@ -1,8 +1,5 @@
 package org.objectscape.ce.backend.storage
 
-import org.objectscape.ce.backend.DatabaseException
-import org.objectscape.ce.backend.NotPersistentException
-import org.objectscape.ce.backend.model.Category
 import org.objectscape.ce.backend.model.Model
 import org.objectscape.ce.backend.util.forEachIsLast
 import java.lang.StringBuilder

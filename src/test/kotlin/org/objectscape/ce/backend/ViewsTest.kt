@@ -55,9 +55,48 @@ class ViewsTest  : AbstractTest() {
         val category2 = ensureRootChildCategoryExists("Category2")
         val category3 = ensureRootChildCategoryExists("Category3")
 
-        getCategoryViewsStore().addCategoryView(CategoryView(-1, viewId, category1.id, 0))
-        getCategoryViewsStore().addCategoryView(CategoryView(-1, viewId, category2.id, 1))
-        getCategoryViewsStore().addCategoryView(CategoryView(-1, viewId, category3.id, 2))
+        val categoryViewsStore = getCategoryViewsStore()
+        categoryViewsStore.testAddRawCategoryView(CategoryView(-1, viewId, category1.id, 0))
+        categoryViewsStore.testAddRawCategoryView(CategoryView(-1, viewId, category2.id, 1))
+        categoryViewsStore.testAddRawCategoryView(CategoryView(-1, viewId, category3.id, 2))
+
+        val categoryViews = categoryViewsStore.getCategoryViewsOrdered(viewId)
+        assertEquals(3, categoryViews.size)
+
+        val loadedCategoryView1 = categoryViews.get(0)
+        val loadedCategoryView2 = categoryViews.get(1)
+        val loadedCategoryView3 = categoryViews.get(2)
+
+        assertEquals(category1.id, loadedCategoryView1.categoryId)
+        assertEquals(0, loadedCategoryView1.position)
+        assertEquals(category2.id, loadedCategoryView2.categoryId)
+        assertEquals(1, loadedCategoryView2.position)
+        assertEquals(category3.id, loadedCategoryView3.categoryId)
+        assertEquals(2, loadedCategoryView3.position)
+    }
+
+    @Test
+    fun insertCategoryViewInOrder() {
+        insertCategoryView()
+
+        val categoryViewsStore = getCategoryViewsStore()
+
+        val view = getTestViewsStore().ensureViewExists("MyView")
+        var viewId = view.id
+        var categoryViews = categoryViewsStore.getCategoryViewsOrdered(viewId)
+        assertEquals(3, categoryViews.size)
+
+        var positions = categoryViews.map { it.position }.toSortedSet()
+        assertTrue(positions.containsAll(listOf(0, 1, 2)))
+
+        val category4 = ensureRootChildCategoryExists("Category4")
+        getTestViewsStore().addCategoryToView(view, category4, 2, categoryViews)
+
+        categoryViews = categoryViewsStore.getCategoryViewsOrdered(viewId)
+        assertEquals(4, categoryViews.size)
+
+        positions = categoryViews.map { it.position }.toSortedSet()
+        assertTrue(positions.containsAll(listOf(0, 1, 2, 3)))
     }
 
     @Test(expected = SQLiteException::class)
@@ -67,8 +106,8 @@ class ViewsTest  : AbstractTest() {
 
         // causes unique key constraint as category with id categoryId already exists for the same view
         val categoryId = 1L
-        getCategoryViewsStore().addCategoryView(CategoryView(-1, viewId, categoryId, 0))
-        getCategoryViewsStore().addCategoryView(CategoryView(-1, viewId, categoryId, 1))
+        getCategoryViewsStore().testAddRawCategoryView(CategoryView(-1, viewId, categoryId, 0))
+        getCategoryViewsStore().testAddRawCategoryView(CategoryView(-1, viewId, categoryId, 1))
     }
 
     @Test
@@ -213,7 +252,7 @@ class ViewsTest  : AbstractTest() {
     }
 
     private fun insertInOrder(cvNew: CategoryView, cvs: List<CategoryView>) : List<CategoryView> {
-        return getTestViewsStore().insertInOrderTest(cvNew, cvs)
+        return getCategoryViewsStore().testInsertInOrder(cvNew, cvs)
     }
 
 }

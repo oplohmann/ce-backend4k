@@ -1,7 +1,5 @@
 package org.objectscape.ce.backend.storage
 
-import org.objectscape.ce.backend.CategoryAlreadyExists
-import org.objectscape.ce.backend.DatabaseException
 import org.objectscape.ce.backend.model.Category
 import java.sql.Connection
 import java.sql.ResultSet

@@ -14,6 +14,10 @@ class TestDatabase(dbFilePath: String) : Database(dbFilePath) {
         TestViewsStore(connection, categoryViewsStore)
     }
 
+    val testCategoryViewsStore : TestCategoryViewsStore by lazy {
+        TestCategoryViewsStore(connection)
+    }
+
     fun deleteAllCategoriesExceptRootCategory() {
         deleteAllCategoryViews()
         deleteAllCategoryItems()

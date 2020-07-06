@@ -1,4 +1,4 @@
-package org.objectscape.ce.backend
+package org.objectscape.ce.backend.storage
 
 import java.lang.Exception
 

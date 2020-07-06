@@ -5,6 +5,7 @@ import org.junit.Test
 import org.objectscape.ce.backend.model.Category
 import org.objectscape.ce.backend.storage.CategoryStore
 import org.objectscape.ce.backend.storage.CategoryViewsStore
+import org.objectscape.ce.backend.util.TestCategoryViewsStore
 import org.objectscape.ce.backend.util.TestDatabase
 import org.objectscape.ce.backend.util.TestViewsStore
 
@@ -95,8 +96,8 @@ abstract class AbstractTest {
         return testDatabase.testViewsStore
     }
 
-    protected fun getCategoryViewsStore(): CategoryViewsStore {
-        return testDatabase.categoryViewsStore
+    protected fun getCategoryViewsStore(): TestCategoryViewsStore {
+        return testDatabase.testCategoryViewsStore
     }
 
     protected fun getCategoriesStore() : CategoryStore {

@@ -12,10 +12,6 @@ class TestViewsStore : ViewsStore {
 
     constructor(connection: Connection, categoryViewsStore : CategoryViewsStore) : super(connection, categoryViewsStore)
 
-    fun insertInOrderTest(cvNew: CategoryView, cvs: List<CategoryView>) : List<CategoryView> {
-        return insertInOrder(cvNew, cvs)
-    }
-
     fun ensureViewExists(name: String) : View {
         var view = loadViewNamed(name)
         if(view != null)
