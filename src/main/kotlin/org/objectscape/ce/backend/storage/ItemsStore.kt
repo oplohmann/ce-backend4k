@@ -2,6 +2,7 @@ package org.objectscape.ce.backend.storage
 
 import org.objectscape.ce.backend.model.Category
 import org.objectscape.ce.backend.model.Item
+import org.objectscape.ce.backend.storage.exceptions.DatabaseException
 import java.lang.StringBuilder
 import java.sql.Connection
 import java.sql.ResultSet

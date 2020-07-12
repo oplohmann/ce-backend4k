@@ -5,8 +5,8 @@ import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 import org.objectscape.ce.backend.model.Category
-import org.objectscape.ce.backend.storage.CategoryAlreadyExists
-import org.objectscape.ce.backend.storage.DatabaseException
+import org.objectscape.ce.backend.storage.exceptions.CategoryAlreadyExists
+import org.objectscape.ce.backend.storage.exceptions.DatabaseException
 import org.objectscape.ce.backend.util.TestDatabase
 
 class CategoryTest : AbstractTest() {

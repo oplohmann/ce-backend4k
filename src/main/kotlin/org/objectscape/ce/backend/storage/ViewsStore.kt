@@ -1,9 +1,12 @@
 package org.objectscape.ce.backend.storage
 
-import org.objectscape.ce.backend.ViewAlreadyExists
+import org.objectscape.ce.backend.storage.exceptions.ViewAlreadyExists
 import org.objectscape.ce.backend.model.Category
 import org.objectscape.ce.backend.model.CategoryView
 import org.objectscape.ce.backend.model.View
+import org.objectscape.ce.backend.storage.exceptions.CategorySortException
+import org.objectscape.ce.backend.storage.exceptions.DatabaseException
+import org.objectscape.ce.backend.storage.exceptions.NotPersistentException
 import java.sql.Connection
 import java.sql.ResultSet
 
@@ -114,6 +117,10 @@ open class ViewsStore : AbstractStore {
             return null
         }
         return views.get(0)
+    }
+
+    fun removeCategoryView(view: View, categoryViewToBeRemoved: CategoryView, categoryViews: List<CategoryView>): List<CategoryView> {
+        return categoryViewsStore.removeCategoryView(view, categoryViewToBeRemoved, categoryViews)
     }
 
     override fun tableName(): String = View.TableName

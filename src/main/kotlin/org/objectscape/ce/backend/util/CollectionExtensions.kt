@@ -11,3 +11,8 @@ inline fun <T> Iterable<T>.forEachIsLast(action: (T, isLast: Boolean) -> Unit): 
         action(it.next(), !it.hasNext())
     }
 }
+
+fun <T> MutableList<T>.removed(index: Int): MutableList<T> {
+    this.removeAt(index)
+    return this
+}

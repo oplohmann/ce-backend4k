@@ -1,10 +1,13 @@
 package org.objectscape.ce.backend.storage
 
-import org.objectscape.ce.backend.model.Category
 import org.objectscape.ce.backend.model.CategoryView
 import org.objectscape.ce.backend.model.View
+import org.objectscape.ce.backend.storage.exceptions.CategorySortException
+import org.objectscape.ce.backend.storage.exceptions.ReferentialException
 import java.sql.Connection
 import java.sql.ResultSet
+import java.util.*
+import kotlin.collections.ArrayList
 
 open class CategoryViewsStore(connection: Connection) : AbstractStore(connection) {
 
@@ -33,7 +36,7 @@ open class CategoryViewsStore(connection: Connection) : AbstractStore(connection
         return execute("insert into ${tableName()}(view_id, category_id, position) values(${categoryView.viewId}, ${categoryView.categoryId}, ${categoryView.position});")
     }
 
-    fun updatePositions(changedCategoryViews: List<CategoryView>) {
+    fun updatePositions(changedCategoryViews: Collection<CategoryView>) {
         changedCategoryViews.forEach {
             execute("update ${tableName()} set position = ${it.position} where id = ${it.id};")
         }
@@ -85,6 +88,39 @@ open class CategoryViewsStore(connection: Connection) : AbstractStore(connection
         }
 
         return updatedCvs
+    }
+
+    @Throws(ReferentialException::class)
+    fun removeCategoryView(view: View, categoryViewToBeRemoved: CategoryView, categoryViews: List<CategoryView>): List<CategoryView> {
+        if(!categoryViews.contains(categoryViewToBeRemoved)) {
+            throw ReferentialException(categoryViewToBeRemoved.toString() + " not part of " + categoryViews)
+        }
+        checkReferentialConsistent(view.id, categoryViewToBeRemoved)
+        checkReferentialConsistent(view.id, categoryViews)
+
+        val categoryViewsWithChangedPosition = categoryViews.filter { it != categoryViewToBeRemoved }.toSortedSet(compareBy { it.position })
+        categoryViewsWithChangedPosition.forEachIndexed { index, categoryView -> categoryView.position = index }
+        updatePositions(categoryViewsWithChangedPosition)
+
+        removeFromView(view, categoryViewToBeRemoved)
+        return categoryViewsWithChangedPosition.toList()
+    }
+
+    private fun removeFromView(view: View, categoryView: CategoryView) {
+        checkReferentialConsistent(view.id, categoryView)
+        execute("delete from ${tableName()} where id = ${categoryView.id}")
+        categoryView.id = -1
+    }
+
+    private fun checkReferentialConsistent(viewId: Long, categoryView: List<CategoryView>) {
+        categoryView.forEach { checkReferentialConsistent(viewId, it) }
+    }
+
+    @Throws(ReferentialException::class)
+    private fun checkReferentialConsistent(viewId: Long, categoryView: CategoryView) {
+        if (categoryView.viewId != viewId) {
+            throw ReferentialException(categoryView.toString() + " not part of view " + viewId)
+        }
     }
 
 }

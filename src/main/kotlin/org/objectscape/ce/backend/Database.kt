@@ -1,6 +1,7 @@
 package org.objectscape.ce.backend
 
 import org.objectscape.ce.backend.storage.*
+import org.objectscape.ce.backend.storage.exceptions.DatabaseException
 import java.sql.Connection
 import java.sql.DriverManager
 

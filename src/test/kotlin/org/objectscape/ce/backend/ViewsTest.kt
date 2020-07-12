@@ -7,7 +7,9 @@ import org.junit.Test
 import org.objectscape.ce.backend.model.Category
 import org.objectscape.ce.backend.model.CategoryView
 import org.objectscape.ce.backend.model.View
+import org.objectscape.ce.backend.storage.exceptions.ViewAlreadyExists
 import org.objectscape.ce.backend.util.TestDatabase
+import org.objectscape.ce.backend.util.removed
 import org.sqlite.SQLiteException
 import kotlin.collections.ArrayList
 
@@ -47,7 +49,7 @@ class ViewsTest  : AbstractTest() {
     }
 
     @Test
-    fun insertCategoryView() {
+    fun insertCategoryViews() {
         testDatabase.deleteAllCategoryViews()
         var viewId = getTestViewsStore().ensureViewExists("MyView").id
 
@@ -77,7 +79,7 @@ class ViewsTest  : AbstractTest() {
 
     @Test
     fun insertCategoryViewInOrder() {
-        insertCategoryView()
+        insertCategoryViews()
 
         val categoryViewsStore = getCategoryViewsStore()
 
@@ -97,6 +99,38 @@ class ViewsTest  : AbstractTest() {
 
         positions = categoryViews.map { it.position }.toSortedSet()
         assertTrue(positions.containsAll(listOf(0, 1, 2, 3)))
+    }
+
+    @Test
+    fun deleteCategoryViewInOrder() {
+        // delete from all position: start, middle, end (0, 1, 2)
+        deleteCategoryViewInOrder(0)
+        deleteCategoryViewInOrder(1)
+        deleteCategoryViewInOrder(2)
+    }
+
+    fun deleteCategoryViewInOrder(indexOfItemToBeRemoved : Int) {
+        testDatabase.deleteViewRelatedData()
+        insertCategoryViews()
+
+        val categoryViewsStore = getCategoryViewsStore()
+
+        val view = getTestViewsStore().ensureViewExists("MyView")
+        var viewId = view.id
+        var categoryViews = categoryViewsStore.getCategoryViewsOrdered(viewId)
+        assertEquals(3, categoryViews.size)
+
+        var positions = categoryViews.map { it.position }.toSortedSet()
+        assertTrue(positions.containsAll(listOf(0, 1, 2)))
+
+        var categoryToBeRemoved = categoryViews.get(indexOfItemToBeRemoved)
+        val updatedViews = getTestViewsStore().removeCategoryView(view, categoryToBeRemoved, categoryViews)
+
+        assertTrue(updatedViews.size == 2)
+        assertTrue(!updatedViews.contains(categoryToBeRemoved))
+        assertTrue(!categoryToBeRemoved.isPersistent())
+
+        assertEquals(listOf(0, 1), updatedViews.map { it.position}.toList())
     }
 
     @Test(expected = SQLiteException::class)
