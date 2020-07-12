@@ -7,6 +7,7 @@ import org.objectscape.ce.backend.model.View
 import org.objectscape.ce.backend.storage.exceptions.CategorySortException
 import org.objectscape.ce.backend.storage.exceptions.DatabaseException
 import org.objectscape.ce.backend.storage.exceptions.NotPersistentException
+import java.lang.IndexOutOfBoundsException
 import java.sql.Connection
 import java.sql.ResultSet
 
@@ -21,6 +22,8 @@ open class ViewsStore : AbstractStore {
     init {
         ensureRootViewExists()
     }
+
+    override fun tableName(): String = View.TableName
 
     private fun ensureRootViewExists() {
         if(!hasRootView()) {
@@ -123,6 +126,9 @@ open class ViewsStore : AbstractStore {
         return categoryViewsStore.removeCategoryView(view, categoryViewToBeRemoved, categoryViews)
     }
 
-    override fun tableName(): String = View.TableName
+    @Throws(IndexOutOfBoundsException::class)
+    fun moveCategoryView(from: Int, to: Int, categoryViews: List<CategoryView>): List<CategoryView> {
+        return categoryViewsStore.moveCategoryView(from, to, categoryViews)
+    }
 
 }

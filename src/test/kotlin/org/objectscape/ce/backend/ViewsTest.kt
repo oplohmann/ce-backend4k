@@ -9,8 +9,8 @@ import org.objectscape.ce.backend.model.CategoryView
 import org.objectscape.ce.backend.model.View
 import org.objectscape.ce.backend.storage.exceptions.ViewAlreadyExists
 import org.objectscape.ce.backend.util.TestDatabase
-import org.objectscape.ce.backend.util.removed
 import org.sqlite.SQLiteException
+import java.lang.IndexOutOfBoundsException
 import kotlin.collections.ArrayList
 
 class ViewsTest  : AbstractTest() {
@@ -102,6 +102,75 @@ class ViewsTest  : AbstractTest() {
     }
 
     @Test
+    fun moveCategoryView() {
+        moveCategoryView(0, 1)
+        moveCategoryView(0, 2)
+
+        moveCategoryView(1, 0)
+        moveCategoryView(1, 2)
+
+        moveCategoryView(2, 0)
+        moveCategoryView(2, 1)
+
+        moveCategoryViewCheckWrongIndexGetsRejected()
+    }
+
+    private fun moveCategoryViewCheckWrongIndexGetsRejected() {
+        var outOfRangeExceptionOccured = false;
+
+        try {
+            moveCategoryView(-1, 1)
+        } catch (e: IndexOutOfBoundsException) {
+            outOfRangeExceptionOccured = true
+        }
+
+        assertTrue(outOfRangeExceptionOccured)
+
+        outOfRangeExceptionOccured = false
+
+        try {
+            moveCategoryView(0, 3)
+        } catch (e: IndexOutOfBoundsException) {
+            outOfRangeExceptionOccured = true
+        }
+
+        assertTrue(outOfRangeExceptionOccured)
+
+        outOfRangeExceptionOccured = false
+
+        try {
+            moveCategoryView(1, 1)
+        } catch (e: IndexOutOfBoundsException) {
+            outOfRangeExceptionOccured = true
+        }
+
+        assertTrue(outOfRangeExceptionOccured)
+    }
+
+    private fun moveCategoryView(from: Int, to: Int) {
+        testDatabase.deleteViewRelatedData()
+        insertCategoryViews()
+
+        val categoryViewsStore = getCategoryViewsStore()
+        val viewStore = getTestViewsStore()
+        val view = viewStore.ensureViewExists("MyView")
+        var viewId = view.id
+        var categoryViews = categoryViewsStore.getCategoryViewsOrdered(viewId)
+        assertEquals(3, categoryViews.size)
+
+        val categoryViewsAfterMove = viewStore.moveCategoryView(from, to, categoryViews)
+
+        var categoryViewsAfterMoveReloaded = categoryViewsStore.getCategoryViewsOrdered(viewId)
+
+        assertEquals(categoryViewsAfterMove, categoryViewsAfterMoveReloaded)
+        assertEquals(3, categoryViewsAfterMove.size)
+        assertEquals(from, categoryViewsAfterMove.get(from).position)
+        assertEquals(to, categoryViewsAfterMove.get(to).position)
+
+        assertEquals(listOf(0, 1, 2), categoryViewsAfterMove.map { it.position })
+    }
+
+    @Test
     fun deleteCategoryViewInOrder() {
         // delete from all position: start, middle, end (0, 1, 2)
         deleteCategoryViewInOrder(0)
@@ -130,7 +199,7 @@ class ViewsTest  : AbstractTest() {
         assertTrue(!updatedViews.contains(categoryToBeRemoved))
         assertTrue(!categoryToBeRemoved.isPersistent())
 
-        assertEquals(listOf(0, 1), updatedViews.map { it.position}.toList())
+        assertEquals(listOf(0, 1), updatedViews.map { it.position }.toList())
     }
 
     @Test(expected = SQLiteException::class)

@@ -4,6 +4,7 @@ import org.objectscape.ce.backend.model.CategoryView
 import org.objectscape.ce.backend.model.View
 import org.objectscape.ce.backend.storage.exceptions.CategorySortException
 import org.objectscape.ce.backend.storage.exceptions.ReferentialException
+import java.lang.IndexOutOfBoundsException
 import java.sql.Connection
 import java.sql.ResultSet
 import java.util.*
@@ -121,6 +122,28 @@ open class CategoryViewsStore(connection: Connection) : AbstractStore(connection
         if (categoryView.viewId != viewId) {
             throw ReferentialException(categoryView.toString() + " not part of view " + viewId)
         }
+    }
+
+    fun moveCategoryView(from: Int, to: Int, categoryViews: List<CategoryView>): List<CategoryView> {
+        if(from < 0 || from >= categoryViews.size) {
+            throw IndexOutOfBoundsException("index $from out of bounds in $categoryViews")
+        }
+        if(to < 0 || to >= categoryViews.size) {
+            throw IndexOutOfBoundsException("index $to out of bounds in $categoryViews")
+        }
+        if(from == to) {
+            throw IndexOutOfBoundsException("from index $from equals $to index")
+        }
+
+        val fromCategoryView = categoryViews.get(from)
+        fromCategoryView.position = to
+
+        val toCategoryView = categoryViews.get(to)
+        toCategoryView.position = from
+
+        updatePositions(listOf(fromCategoryView, toCategoryView))
+
+        return categoryViews.toSortedSet(compareBy { it.position}).toList()
     }
 
 }
